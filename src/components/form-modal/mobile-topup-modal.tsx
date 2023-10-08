@@ -8,6 +8,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { motion } from "framer-motion";
+
 import {
   Card,
   CardContent,
@@ -19,60 +21,220 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import NetworkProviderSelector from "../utils/network-provider-selector";
+import { Toggle } from "../ui/toggle";
+import { useState } from "react";
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 
 export function MobileTopUpDialog({ children }: { children: React.ReactNode }) {
+  const [formStep, setFormStep] = useState(0);
+
   return (
-    <Dialog>
+    <Dialog
+      onOpenChange={(open) => {
+        if (!open) {
+          setFormStep(0);
+        }
+      }}
+    >
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="h-[100dvh] sm:h-auto sm:max-w-[425px]">
-        <Tabs defaultValue="account">
-          <DialogHeader>
-            <DialogTitle className="text-2xl">Mobile TopUp</DialogTitle>
-            <DialogDescription>
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="account">Airtime</TabsTrigger>
-                <TabsTrigger value="password">Data</TabsTrigger>
-              </TabsList>
-            </DialogDescription>
-          </DialogHeader>
-          <TabsContent value="account">
-            <div className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="name">Name</Label>
-                <Input id="name" defaultValue="Pedro Duarte" />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="username">Username</Label>
-                <Input id="username" defaultValue="@peduarte" />
-              </div>
-            </div>
-          </TabsContent>
-          <TabsContent value="password">
-            <Card>
-              <CardHeader>
-                <CardTitle>Password</CardTitle>
-                <CardDescription>
-                  Change your password here. After saving, you&apos;ll be logged
-                  out.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="grid gap-2">
-                  <Label htmlFor="current">Current password</Label>
-                  <Input id="current" type="password" />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="new">New password</Label>
-                  <Input id="new" type="password" />
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          <DialogFooter className="mt-4">
-            <Button type="submit">Save changes</Button>
-          </DialogFooter>
-        </Tabs>
+      <DialogContent className="flex h-[100dvh] flex-col overflow-x-hidden sm:h-[550px] sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle className="text-2xl">Mobile TopUp</DialogTitle>
+          <DialogDescription>Hello World</DialogDescription>
+        </DialogHeader>
+        <div className="relative flex-1 overflow-x-hidden">
+          <motion.div
+            className={cn("h-full space-y-3", {
+              // hidden: formStep == 1,
+            })}
+            // formStep == 0 -> translateX == 0
+            // formStep == 1 -> translateX == '-100%'
+            animate={{
+              translateX: `-${formStep * 100}%`,
+            }}
+            transition={{
+              ease: "easeInOut",
+            }}
+          >
+            <AirtimePurchaseStep1 />
+          </motion.div>
+          <motion.div
+            className={cn("absolute left-0 right-0 top-0 h-full space-y-3", {
+              // hidden: formStep == 0,
+            })}
+            // formStep == 0 -> translateX == 100%
+            // formStep == 1 -> translateX == 0
+            animate={{
+              translateX: `${100 - formStep * 100}%`,
+            }}
+            style={{
+              translateX: `${100 - formStep * 100}%`,
+            }}
+            transition={{
+              ease: "easeInOut",
+            }}
+          >
+            <AirtimePurchaseStep2 />
+          </motion.div>
+          <motion.div
+            className={cn("absolute left-0 right-0 top-0 space-y-3", {
+              // hidden: formStep == 0,
+            })}
+            // formStep == 0 -> translateX == 100%
+            // formStep == 1 -> translateX == 0
+            animate={{
+              translateX: `${200 - formStep * 100}%`,
+            }}
+            style={{
+              translateX: `${200 - formStep * 100}%`,
+            }}
+            transition={{
+              ease: "easeInOut",
+            }}
+          >
+            <AirtimPurchaseStep3 />
+          </motion.div>
+        </div>
+        <DialogFooter className="mt-auto h-fit">
+          <Button
+            type="submit"
+            className="w-full"
+            onClick={() => setFormStep(formStep + 1)}
+          >
+            Next
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
+
+const AirtimePurchaseStep1 = () => {
+  const [selectedAmount, setSelectedAmount] = useState(0);
+
+  return (
+    <div className="grid gap-6">
+      <div className="grid gap-2">
+        <Label htmlFor="name">Choose Network Provider</Label>
+        <NetworkProviderSelector />
+      </div>
+      <div className="grid gap-2">
+        <Label htmlFor="amount">Amount</Label>
+        <Input type="number" id="amount" defaultValue="" />
+        <div className="grid grid-cols-5 gap-2">
+          {[50, 100, 200, 500, 1000].map((amount) => (
+            <Toggle
+              variant="outline"
+              aria-label="Toggle italic"
+              key={amount}
+              pressed={selectedAmount === amount}
+              className="h-8"
+              onPressedChange={(pressed) => {
+                if (pressed) {
+                  setSelectedAmount(amount);
+                } else {
+                  setSelectedAmount(0);
+                }
+              }}
+            >
+              {amount}
+            </Toggle>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const AirtimePurchaseStep2 = () => {
+  return (
+    <div className="grid gap-6">
+      <div className="grid gap-2">
+        <Label htmlFor="beneficiary">Beneficiary Phone Number</Label>
+        <Input type="tel" id="beneficiary" defaultValue="" />
+      </div>
+      <h5 className="text-md w-14 border-b-2 border-primary font-normal text-muted-foreground">
+        Recent
+      </h5>
+      <div>
+        <div className="space-y-4">
+          <div className="flex items-center">
+            <Avatar className="h-8 w-8">
+              <AvatarImage src="/avatars/01.png" alt="Avatar" />
+              <AvatarFallback>AA</AvatarFallback>
+            </Avatar>
+            <div className="ml-4 space-y-1">
+              <p className="text-sm font-medium leading-none">
+                Ayoola Abdulqudus
+              </p>
+            </div>
+            <div className="ml-auto font-normal text-slate-600">
+              09080890930
+            </div>
+          </div>
+          <div className="flex items-center">
+            <Avatar className="flex h-8 w-8 items-center justify-center space-y-0 border">
+              <AvatarImage src="/avatars/02.png" alt="Avatar" />
+              <AvatarFallback>JL</AvatarFallback>
+            </Avatar>
+            <div className="ml-4 space-y-1">
+              <p className="text-sm font-medium leading-none">Jackson Lee</p>
+            </div>
+            <div className="ml-auto font-normal text-slate-600">
+              09080890930
+            </div>
+          </div>
+          <div className="flex items-center">
+            <Avatar className="flex h-8 w-8 items-center justify-center space-y-0 border">
+              <AvatarImage src="/avatars/02.png" alt="Avatar" />
+              <AvatarFallback>JL</AvatarFallback>
+            </Avatar>
+            <div className="ml-4 space-y-1">
+              <p className="text-sm font-medium leading-none">Jackson Lee</p>
+            </div>
+            <div className="ml-auto font-normal text-slate-600">
+              09080890930
+            </div>
+          </div>
+          <div className="flex items-center">
+            <Avatar className="h-8 w-8">
+              <AvatarImage src="/avatars/03.png" alt="Avatar" />
+              <AvatarFallback>IN</AvatarFallback>
+            </Avatar>
+            <div className="ml-4 space-y-1">
+              <p className="text-sm font-medium leading-none">
+                Isabella Nguyen
+              </p>
+            </div>
+            <div className="ml-auto font-normal text-slate-600">
+              09080890930
+            </div>
+          </div>
+          <div className="flex items-center">
+            <Avatar className="h-8 w-8">
+              <AvatarImage src="/avatars/05.png" alt="Avatar" />
+              <AvatarFallback>SD</AvatarFallback>
+            </Avatar>
+            <div className="ml-4 space-y-1">
+              <p className="text-sm font-medium leading-none">Sofia Davis</p>
+            </div>
+            <div className="ml-auto font-normal text-slate-600">
+              09080890930
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const AirtimPurchaseStep3 = () => {
+  return (
+    <div>
+      <h2>Confirmation</h2>
+    </div>
+  );
+};

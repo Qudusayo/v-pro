@@ -9,7 +9,7 @@ export default function Login() {
       link={{ text: "Login", href: "/auth/login", direction: "right" }}
     >
       <div className="lg:p-8">
-        <div className="mx-auto flex h-screen w-full flex-col justify-center space-y-6 sm:w-[350px] md:h-auto">
+        <div className="mx-auto flex h-[100dvh] w-full flex-col justify-center space-y-6 sm:w-[350px] md:h-auto">
           <div className="flex flex-col space-y-2 text-center">
             <h1 className="text-2xl font-semibold tracking-tight">
               Create your account

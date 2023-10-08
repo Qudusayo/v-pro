@@ -17,7 +17,7 @@ export function FundWallet() {
       <DialogTrigger asChild>
         <Button>Fund Wallet</Button>
       </DialogTrigger>
-      <DialogContent className="h-screen sm:h-auto sm:max-w-[425px]">
+      <DialogContent className="h-[100dvh]  sm:h-auto sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Edit profile</DialogTitle>
           <DialogDescription>

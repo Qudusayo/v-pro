@@ -24,7 +24,7 @@ export function MobileTopUpDialog({ children }: { children: React.ReactNode }) {
   return (
     <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="h-screen sm:h-auto sm:max-w-[425px]">
+      <DialogContent className="h-[100dvh] sm:h-auto sm:max-w-[425px]">
         <Tabs defaultValue="account">
           <DialogHeader>
             <DialogTitle className="text-2xl">Mobile TopUp</DialogTitle>

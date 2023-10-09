@@ -44,7 +44,7 @@ function Dashboard() {
           </div>
         </div>
       </div>
-      <div className="flex-1 space-y-4 p-8 pt-6">
+      <div className="flex-1 space-y-4 p-3 pt-6 sm:p-8">
         <div className="mt-5 flex items-center justify-between space-y-2">
           <div>
             <span className="mb-4 text-sm font-medium text-muted-foreground">

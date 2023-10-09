@@ -19,25 +19,12 @@ export function FundWallet() {
       </DialogTrigger>
       <DialogContent className="h-[100dvh]  sm:h-auto sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Edit profile</DialogTitle>
+          <DialogTitle>Fund Wallet</DialogTitle>
           <DialogDescription>
             How would you like to fund your wallet?
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Name
-            </Label>
-            <Input id="name" value="Pedro Duarte" className="col-span-3" />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="username" className="text-right">
-              Username
-            </Label>
-            <Input id="username" value="@peduarte" className="col-span-3" />
-          </div>
-        </div>
+        <div className="grid gap-4 py-4"></div>
         <DialogFooter>
           <Button type="submit">Save changes</Button>
         </DialogFooter>

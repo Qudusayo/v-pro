@@ -9,17 +9,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useFormik } from "formik";
 
-export default function NetworkProviderSelector() {
+export default function NetworkProviderSelector({
+  transaction,
+}: {
+  transaction: ReturnType<typeof useFormik<IAirtimeTopUp>>;
+}) {
   return (
-    <Select>
+    <Select
+      onValueChange={(value) =>
+        transaction.setFieldValue("networkProvider", value)
+      }
+      value={transaction.values.networkProvider}
+    >
       <SelectTrigger className="w-full">
         <SelectValue placeholder="Select network provider" />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
           <SelectLabel>Network Providers</SelectLabel>
-          <SelectItem value="blueberry">
+          <SelectItem value="9mobile">
             <div className="flex flex-row items-center">
               <Avatar className="mr-2 inline-block h-6 w-6 justify-center border">
                 <AvatarImage
@@ -31,7 +41,7 @@ export default function NetworkProviderSelector() {
               <span>9Mobile</span>
             </div>
           </SelectItem>
-          <SelectItem value="grapes">
+          <SelectItem value="airtel">
             <div className="flex flex-row items-center">
               <Avatar className="mr-2 inline-block h-6 w-6 justify-center border">
                 <AvatarImage
@@ -43,7 +53,7 @@ export default function NetworkProviderSelector() {
               <span>Airtel</span>
             </div>
           </SelectItem>
-          <SelectItem value="apple">
+          <SelectItem value="globacom">
             <div className="flex flex-row items-center">
               <Avatar className="mr-2 inline-block h-6 w-6 justify-center border">
                 <AvatarImage
@@ -55,7 +65,7 @@ export default function NetworkProviderSelector() {
               <span>Globacom</span>
             </div>
           </SelectItem>
-          <SelectItem value="banana">
+          <SelectItem value="mtn">
             <div className="flex flex-row items-center">
               <Avatar className="mr-2 inline-block h-6 w-6 justify-center border">
                 <AvatarImage

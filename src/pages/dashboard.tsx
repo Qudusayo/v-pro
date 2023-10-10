@@ -1,5 +1,5 @@
 import Parse from "parse";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { ArrowRight } from "lucide-react";
 
@@ -18,6 +18,20 @@ import { FundWallet } from "@/components/form-modal/fund-wallet-modal";
 
 function Dashboard() {
   const { push } = useRouter();
+  const user = Parse.User.current();
+  const [balance, setBalance] = useState(0);
+
+  useEffect(() => {
+    // get balance from user table
+
+    if (user) {
+      console.log(user);
+      const query = new Parse.Query(Parse.User);
+      query.get(user.id).then((user) => {
+        setBalance(user.get("walletBalance"));
+      });
+    }
+  });
 
   return (
     <div>
@@ -51,7 +65,7 @@ function Dashboard() {
               Total Balance
             </span>
             <h2 className="text-4xl font-medium tracking-tight">
-              {formatNaira(0)}
+              {formatNaira(balance)}
             </h2>
           </div>
           <div className="flex items-center space-x-2">

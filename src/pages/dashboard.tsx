@@ -15,20 +15,23 @@ import MobileTopUp from "@/components/mobile-topup";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { TransactionTable } from "@/components/transaction-table/transaction-table";
 import { FundWallet } from "@/components/form-modal/fund-wallet-modal";
+import { useMyStore } from "@/store/store";
 
 function Dashboard() {
   const { push } = useRouter();
-  const user = Parse.User.current();
-  const [balance, setBalance] = useState(0);
+  const user = useMyStore((state) => state.user);
+  const setUser = useMyStore((state) => state.setUser);
+  let parseUser = Parse.User.current();
 
   useEffect(() => {
-    // get balance from user table
-
-    if (user) {
-      console.log(user);
+    if (parseUser) {
       const query = new Parse.Query(Parse.User);
-      query.get(user.id).then((user) => {
-        setBalance(user.get("walletBalance"));
+      query.get(parseUser.id).then((parseUser) => {
+        setUser({
+          balance: parseUser.get("balance"),
+          email: parseUser.get("email"),
+          username: parseUser.get("username"),
+        });
       });
     }
   });
@@ -65,7 +68,7 @@ function Dashboard() {
               Total Balance
             </span>
             <h2 className="text-4xl font-medium tracking-tight">
-              {formatNaira(balance)}
+              {formatNaira(user?.balance ?? 0)}
             </h2>
           </div>
           <div className="flex items-center space-x-2">

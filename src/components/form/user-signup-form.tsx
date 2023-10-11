@@ -12,6 +12,7 @@ import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { ToastAction } from "@/components/ui/toast";
 import { useToast } from "@/components/ui/use-toast";
+import { emailRegex, phoneRegex } from "./user-login-form";
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
@@ -32,15 +33,9 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             .required("Phone Number is Required")
             .min(11, "Phone Number must be at least 11 characters")
             .max(11, "Invalid Phone Number")
-            .matches(
-              /^(070|080|081|090|091)\d{8}$/,
-              "Phone Number must contain only numbers",
-            ),
+            .matches(phoneRegex, "Phone Number must contain only numbers"),
           email: Yup.string()
-            .matches(
-              /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-              "Invalid email address",
-            )
+            .matches(emailRegex, "Invalid email address")
             .required("Email is Required"),
           password: Yup.string()
             .required("Password is Required")
@@ -56,6 +51,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             user.set("username", values.phone);
             user.set("email", values.email);
             user.set("password", values.password);
+            user.set("balance", 0);
 
             await user.signUp();
             resetForm();

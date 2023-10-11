@@ -12,6 +12,8 @@ import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 
+export const phoneRegex = /^(070|080|081|090|091)\d{8}$/;
+export const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
@@ -20,24 +22,27 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   return (
     <div className={cn("grid gap-6", className)} {...props}>
       <Formik
-        initialValues={{ email: "", password: "" }}
+        initialValues={{ username: "", password: "" }}
         validationSchema={Yup.object({
-          email: Yup.string()
-            .matches(
-              /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-              "Invalid email address",
+          username: Yup.string()
+            .test(
+              "phone-or-email",
+              "Invalid email or Phone number",
+              (value) => {
+                if (!value) return true; // Allow empty input
+                return phoneRegex.test(value) || emailRegex.test(value);
+              },
             )
-            .required("Email is Required"),
+            .required("Email or Phone number is required"),
           password: Yup.string()
             .required("Password is Required")
             .min(6, "Password must be at least 6 characters"),
         })}
         onSubmit={async (values, { setSubmitting }) => {
           try {
-            await Parse.User.logIn(values.email, values.password);
+            await Parse.User.logIn(values.username, values.password);
             push("/dashboard");
           } catch (error) {
-            console.log(error);
             setSubmitting(false);
           }
         }}
@@ -56,19 +61,18 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
-                  id="email"
+                  id="username"
                   placeholder="name@example.com"
-                  type="email"
+                  type="string"
                   autoCapitalize="none"
-                  autoComplete="email"
                   autoCorrect="off"
                   disabled={isSubmitting}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  value={values.email}
+                  value={values.username}
                 />
                 <p className="text-xs text-red-500">
-                  {errors.email && touched.email && errors.email}
+                  {errors.username && touched.username && errors.username}
                 </p>
               </div>
               <div className="grid gap-2">

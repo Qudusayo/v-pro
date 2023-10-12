@@ -1,5 +1,4 @@
 import React from "react";
-import Image from "next/image";
 import { ArrowRight, Wallet2, Wifi } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

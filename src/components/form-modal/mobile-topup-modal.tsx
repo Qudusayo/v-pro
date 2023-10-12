@@ -23,8 +23,11 @@ import { formatNaira } from "@/lib/naira-format";
 import { ChevronLeft, Loader2 } from "lucide-react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { ProfileData, useMyStore } from "@/store/store";
 
 export function MobileTopUpDialog({ children }: { children: React.ReactNode }) {
+  const user: ProfileData = useMyStore((state) => state.user);
+
   const [formStep, setFormStep] = useState(0);
   const transaction = useFormik<IAirtimeTopUp>({
     initialValues: {
@@ -36,7 +39,8 @@ export function MobileTopUpDialog({ children }: { children: React.ReactNode }) {
       networkProvider: Yup.string().required("Network provider is required"),
       amount: Yup.number()
         .required("Amount is required")
-        .min(50, "Amount must be at least 50"),
+        .min(50, "Amount must be at least 50")
+        .max(user.balance, "Insufficient balance"),
       phone: Yup.string()
         .required("Phone Number is Required")
         .min(11, "Phone Number must be at least 11 characters")

@@ -23,18 +23,32 @@ function Dashboard() {
   const setUser = useMyStore((state) => state.setUser);
   let parseUser = Parse.User.current();
 
-  useEffect(() => {
-    if (parseUser) {
-      const query = new Parse.Query(Parse.User);
-      query.get(parseUser.id).then((parseUser) => {
-        setUser({
-          balance: parseUser.get("balance"),
-          email: parseUser.get("email"),
-          username: parseUser.get("username"),
-        });
+  async function updateUser(id: string) {
+    const query = new Parse.Query(Parse.User);
+    query.get(id).then((user) => {
+      setUser({
+        balance: user.get("balance"),
+        email: user.get("email"),
+        username: user.get("username"),
       });
+    });
+  }
+
+  useEffect(() => {
+    async function subscribeToUserUpdate() {
+      if (parseUser) {
+        await updateUser(parseUser.id);
+
+        let txQuery = new Parse.Query("Transaction");
+        txQuery.equalTo("user", parseUser);
+
+        let subscription = await txQuery.subscribe();
+        subscription.on("create", (tx) => updateUser(tx.get("user").id));
+        subscription.on("update", (tx) => updateUser(tx.get("user").id));
+      }
     }
-  });
+    subscribeToUserUpdate();
+  }, []);
 
   return (
     <div>

@@ -2,20 +2,20 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { motion } from "framer-motion";
+import Parse from "parse";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import NetworkProviderSelector from "../utils/network-provider-selector";
 import { Toggle } from "../ui/toggle";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
@@ -24,9 +24,22 @@ import { ChevronLeft, Loader2 } from "lucide-react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { ProfileData, useMyStore } from "@/store/store";
+import { Error, Success, Warning } from "../alert-icons/alert-icons";
+
+const networkProviders = {
+  $MTN: "mtn.png",
+  $GLO: "glo.jpeg",
+  $AIRTEL: "airtel.jpeg",
+  $9MOBILE: "9mobile.jpeg",
+};
 
 export function MobileTopUpDialog({ children }: { children: React.ReactNode }) {
   const user: ProfileData = useMyStore((state) => state.user);
+  const [transactionStatus, setTransactionStatus] = useState<
+    "success" | "failed" | "pending"
+  >("" as any);
+  const [transactionReference, setTransactionReference] = useState("");
+  const [dailogOpen, setDailogOpen] = useState(false);
 
   const [formStep, setFormStep] = useState(0);
   const transaction = useFormik<IAirtimeTopUp>({
@@ -47,15 +60,35 @@ export function MobileTopUpDialog({ children }: { children: React.ReactNode }) {
         .max(11, "Invalid Phone Number")
         .matches(/^(070|080|081|090|091)\d{8}$/, "Invalid Phone Number"),
     }),
-    onSubmit: (values, { setSubmitting }) => {
-      setTimeout(() => {
-        Promise.resolve().then(() => {
-          setFormStep(0);
-          setSubmitting(false);
-        });
-      }, 5000);
+    onSubmit: async (values, { setSubmitting }) => {
+      try {
+        let transaction = await Parse.Cloud.run("airtime-purchase", values);
+        console.log(transaction);
+        setSubmitting(false);
+        setFormStep(3);
+        setTransactionStatus(transaction.status);
+        setTransactionReference(transaction.reference);
+      } catch (error) {
+        console.log(error);
+      }
     },
   });
+
+  useEffect(() => {
+    async function subscribeToUserUpdate() {
+      if (transactionReference) {
+        let txQuery = new Parse.Query("Transaction");
+        txQuery.equalTo("reference", transactionReference);
+
+        let subscription = await txQuery.subscribe();
+        subscription.on("update", (tx) => {
+          console.log(tx);
+          setTransactionStatus(tx.get("status").toLowerCase());
+        });
+      }
+    }
+    subscribeToUserUpdate();
+  }, [transactionReference]);
 
   const handleNext = () => {
     if (formStep === 0) {
@@ -87,28 +120,34 @@ export function MobileTopUpDialog({ children }: { children: React.ReactNode }) {
           setFormStep((prev) => prev + 1);
         }
       });
+    } else if (formStep === 3) {
+      setDailogOpen(false);
+      transaction.resetForm();
+      setFormStep(0);
     } else {
       transaction.handleSubmit();
     }
   };
 
   return (
-    <Dialog
-      onOpenChange={(open) => {
-        if (!open) {
-          setFormStep(0);
-        }
-      }}
-    >
+    <Dialog open={dailogOpen} onOpenChange={setDailogOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="flex h-[100dvh] flex-col overflow-x-hidden sm:h-[500px] sm:max-w-[425px]">
-        <DialogHeader className="mb-4">
-          <div className={"flex flex-row items-center gap-4"}>
+      <DialogContent className="flex h-[100dvh] w-full flex-col overflow-x-hidden sm:h-[600px] sm:max-w-[425px]">
+        <DialogHeader>
+          <div
+            className={cn(
+              { "gap-4": formStep !== 0 },
+              "flex h-auto flex-row items-center",
+            )}
+          >
             <Button
               variant="outline"
               size="icon"
               onClick={() => setFormStep(formStep - 1)}
-              className={cn({ hidden: formStep == 0 })}
+              className={cn({
+                "w-0": formStep == 0 || formStep == 3,
+                "opacity-0": formStep == 0 || formStep == 3,
+              })}
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
@@ -117,15 +156,11 @@ export function MobileTopUpDialog({ children }: { children: React.ReactNode }) {
                 ? "Mobile Top Up"
                 : formStep == 1
                 ? "Enter Beneficiary Details"
-                : "Review Details"}
+                : formStep == 2
+                ? "Review Details"
+                : "Transaction Status"}
             </DialogTitle>
           </div>
-          {formStep === 2 && (
-            <DialogDescription>
-              Please review the details of the airtime top up and ensure they
-              are correct before you proceed
-            </DialogDescription>
-          )}
         </DialogHeader>
         <div className="relative flex-1 overflow-x-hidden">
           <motion.div
@@ -176,6 +211,26 @@ export function MobileTopUpDialog({ children }: { children: React.ReactNode }) {
               phone={transaction.values.phone}
             />
           </motion.div>
+          <motion.div
+            className={"left-0 right-0 top-0 h-0 space-y-3 overflow-hidden"}
+            animate={{
+              translateX: `${300 - formStep * 100}%`,
+            }}
+            style={{
+              translateX: `${300 - formStep * 100}%`,
+              height: formStep == 3 ? "auto" : "0",
+            }}
+            transition={{
+              ease: "easeInOut",
+            }}
+          >
+            <AirtimePurchaseConclusion
+              networkProvider={transaction.values.networkProvider}
+              amount={transaction.values.amount}
+              phone={transaction.values.phone}
+              status={transactionStatus}
+            />
+          </motion.div>
         </div>
         <DialogFooter className="mt-auto h-fit">
           <Button
@@ -187,7 +242,7 @@ export function MobileTopUpDialog({ children }: { children: React.ReactNode }) {
             {transaction.isSubmitting && (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             )}
-            {formStep < 2 ? "Next" : "Confirm"}
+            {formStep === 3 ? "Done" : formStep < 2 ? "Next" : "Confirm"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -282,10 +337,10 @@ const AirtimePurchaseStep2 = ({
           {errors.phone && touched.phone && errors.phone}
         </p>
       </div>
-      <h5 className="text-md w-14 border-b-2 border-primary font-normal text-muted-foreground">
+      {/* <h5 className="text-md hidden w-14 border-b-2 border-primary font-normal text-muted-foreground">
         Recent
       </h5>
-      <div>
+      <div className="hidden">
         <div className="space-y-4">
           <div className="flex items-center">
             <Avatar className="h-8 w-8">
@@ -352,7 +407,7 @@ const AirtimePurchaseStep2 = ({
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };
@@ -368,8 +423,12 @@ const AirtimPurchaseStep3 = ({
 }) => {
   return (
     <div className="px-1">
+      <p className="mb-2 text-sm text-slate-600">
+        Please review the details of the airtime top up and ensure they are
+        correct before you proceed
+      </p>
       <Card
-        className="cursor-pointer bg-blue-200 bg-contain bg-right-bottom bg-no-repeat"
+        className="flex h-52 cursor-pointer flex-col justify-between bg-blue-200 bg-contain bg-right-bottom bg-no-repeat"
         style={{
           backgroundImage: `url('/card-design.svg')`,
         }}
@@ -378,7 +437,11 @@ const AirtimPurchaseStep3 = ({
           <CardTitle className="flex flex-row items-center justify-between text-sm font-medium ">
             <Avatar className="mr-2 inline-block h-8 w-8 justify-center border">
               <AvatarImage
-                src={`/network-providers/mtn.png`}
+                src={
+                  networkProvider
+                    ? `/network-providers/${networkProviders[networkProvider]}`
+                    : "/icons/logo.svg"
+                }
                 alt={"MTN logo"}
               />
               <AvatarFallback>SC</AvatarFallback>
@@ -386,12 +449,82 @@ const AirtimPurchaseStep3 = ({
             <span className="text-xl font-normal">{formatNaira(amount)}</span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="mt-6 space-y-0 pb-4">
+        <CardContent className="space-y-0 pb-9 align-bottom">
           <div>
-            <p className="text-3xl font-light">{phone}</p>
+            <p className="text-2xl font-light">{phone}</p>
           </div>
         </CardContent>
       </Card>
+    </div>
+  );
+};
+
+const AirtimePurchaseConclusion = ({
+  networkProvider,
+  amount,
+  phone,
+  status,
+}: {
+  networkProvider: IAirtimeTopUp["networkProvider"];
+  amount: IAirtimeTopUp["amount"];
+  phone: IAirtimeTopUp["phone"];
+  status: "success" | "failed" | "pending";
+}) => {
+  return (
+    <div className="text-center">
+      {
+        {
+          success: <Success />,
+          failed: <Error />,
+          pending: <Warning />,
+        }[status]
+      }
+      {
+        {
+          success: (
+            <h3 className="text-2xl font-medium">Airtime Top Up Successful</h3>
+          ),
+          failed: (
+            <h3 className="text-2xl font-medium">Airtime Top Up Failed</h3>
+          ),
+          pending: (
+            <h3 className="text-2xl font-medium">Airtime Top Up Processed</h3>
+          ),
+        }[status]
+      }
+      {
+        {
+          success: (
+            <p className="mt-2 text-base text-slate-600">
+              You have successfully purchased airtime worth{" "}
+              <span className="font-semibold">{formatNaira(amount)}</span> for{" "}
+              {phone}
+            </p>
+          ),
+          failed: (
+            <p className="mt-2 text-base text-slate-600">
+              Your airtime top up request worth{" "}
+              <span className="font-semibold">{formatNaira(amount)}</span> for{" "}
+              {phone} failed
+            </p>
+          ),
+          pending: (
+            <p className="mt-2 text-base text-slate-600">
+              Your airtime top up request worth{" "}
+              <span className="font-semibold">{formatNaira(amount)}</span> for{" "}
+              {phone} is being processed
+            </p>
+          ),
+        }[status]
+      }
+      <div className="mt-6">
+        <Button variant="outline" className="m-auto block text-base">
+          View Transaction
+        </Button>
+        <Button variant="link" className="mt-4">
+          Save Beneficiary ?
+        </Button>
+      </div>
     </div>
   );
 };

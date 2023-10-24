@@ -1,5 +1,5 @@
 interface IAirtimeTopUp {
-  networkProvider: "9mobile" | "airtel" | "globacom" | "mtn";
+  networkProvider: "$MTN" | "$GLO" | "$AIRTEL" | "$9MOBILE";
   amount: number;
   phone: string;
 }

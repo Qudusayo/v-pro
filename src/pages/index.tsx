@@ -130,3 +130,13 @@ export default function Home() {
     </main>
   );
 }
+
+// Redirect to "/dashboar"
+export const getServerSideProps = async () => {
+  return {
+    redirect: {
+      destination: "/dashboard",
+      permanent: false,
+    },
+  };
+};

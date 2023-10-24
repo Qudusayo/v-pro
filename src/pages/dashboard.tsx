@@ -16,6 +16,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { TransactionTable } from "@/components/transaction-table/transaction-table";
 import { FundWallet } from "@/components/form-modal/fund-wallet-modal";
 import { useMyStore } from "@/store/store";
+import Image from "next/image";
 
 function Dashboard() {
   const { push } = useRouter();
@@ -55,19 +56,7 @@ function Dashboard() {
       <div className="sticky top-0 z-30 border-b bg-white">
         <div className="flex h-16 items-center px-4">
           <div className="text-md relative z-20 flex flex-1 items-center font-medium">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="mr-2 h-6 w-6 text-primary"
-            >
-              <path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3" />
-            </svg>
-            {/* TopUpLab */}
+            <Image alt="logo" src="/icons/logo.svg" width={25} height={25} />
           </div>
           <MainNav className="flex-grow" />
           <div className="ml-auto flex flex-1 items-center justify-end space-x-4">

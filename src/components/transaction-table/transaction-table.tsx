@@ -8,27 +8,53 @@ import {
 } from "@/components/ui/table";
 import formatDate from "@/lib/format-date";
 import { formatNaira } from "@/lib/naira-format";
-
-const invoices = [
-  {
-    date: formatDate(new Date()),
-    category: "Airtime Purchase",
-    description: "Bought MTN airtime 100 - 08012345678",
-    invoice: "INV001",
-    paymentStatus: "Paid",
-    totalAmount: 250,
-    paymentMethod: "Credit Card",
-    referenceID: "MTN|2023100810|24TF35KCWR",
-  },
-];
+import { useEffect, useState } from "react";
+import Parse from "parse";
 
 export function TransactionTable() {
+  const [transactions, setTransactions] = useState<
+    {
+      id: string;
+      date: string;
+      type: string;
+      description: string;
+      invoice: string;
+      status: string;
+      amount: number;
+      paymentMethod: string;
+      reference: string;
+    }[]
+  >([]);
+
+  useEffect(() => {
+    let transactions = new Parse.Query("Transaction");
+    transactions.equalTo("user", Parse.User.current());
+    transactions.limit(10);
+    transactions.descending("createdAt");
+    transactions.find().then((transactions) => {
+      let tx = transactions.map((transaction) => {
+        return {
+          id: transaction.id,
+          date: formatDate(transaction.get("createdAt")),
+          type: transaction.get("type"),
+          description: transaction.get("description"),
+          invoice: transaction.get("invoice"),
+          status: transaction.get("status"),
+          amount: transaction.get("amount"),
+          paymentMethod: transaction.get("paymentMethod"),
+          reference: transaction.get("reference"),
+        };
+      });
+      setTransactions(tx);
+    });
+  }, []);
+
   return (
     <Table>
       <TableHeader>
         <TableRow>
           <TableHead>Date</TableHead>
-          <TableHead>Category</TableHead>
+          <TableHead>type</TableHead>
           <TableHead>Description</TableHead>
           <TableHead>Reference ID</TableHead>
           <TableHead>Status</TableHead>
@@ -36,15 +62,15 @@ export function TransactionTable() {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {invoices.map((invoice) => (
-          <TableRow key={invoice.invoice}>
-            <TableCell className="font-medium">{invoice.date}</TableCell>
-            <TableCell className="font-medium">{invoice.category}</TableCell>
-            <TableCell>{invoice.description}</TableCell>
-            <TableCell>{invoice.referenceID}</TableCell>
-            <TableCell>{invoice.paymentStatus}</TableCell>
+        {transactions?.map((transaction) => (
+          <TableRow key={transaction.id}>
+            <TableCell className="font-medium">{transaction.date}</TableCell>
+            <TableCell className="font-medium">{transaction.type}</TableCell>
+            <TableCell>{transaction.description}</TableCell>
+            <TableCell>{transaction.reference}</TableCell>
+            <TableCell>{transaction.status}</TableCell>
             <TableCell className="text-right">
-              {formatNaira(invoice.totalAmount)}
+              {formatNaira(transaction.amount)}
             </TableCell>
           </TableRow>
         ))}

@@ -29,7 +29,7 @@ export default function NetworkProviderSelector({
       <SelectContent>
         <SelectGroup>
           <SelectLabel>Network Providers</SelectLabel>
-          <SelectItem value="9mobile">
+          <SelectItem value="$9MOBILE">
             <div className="flex flex-row items-center">
               <Avatar className="mr-2 inline-block h-6 w-6 justify-center border">
                 <AvatarImage
@@ -41,7 +41,7 @@ export default function NetworkProviderSelector({
               <span>9Mobile</span>
             </div>
           </SelectItem>
-          <SelectItem value="airtel">
+          <SelectItem value="$AIRTEL">
             <div className="flex flex-row items-center">
               <Avatar className="mr-2 inline-block h-6 w-6 justify-center border">
                 <AvatarImage
@@ -53,7 +53,7 @@ export default function NetworkProviderSelector({
               <span>Airtel</span>
             </div>
           </SelectItem>
-          <SelectItem value="globacom">
+          <SelectItem value="$GLO">
             <div className="flex flex-row items-center">
               <Avatar className="mr-2 inline-block h-6 w-6 justify-center border">
                 <AvatarImage
@@ -65,7 +65,7 @@ export default function NetworkProviderSelector({
               <span>Globacom</span>
             </div>
           </SelectItem>
-          <SelectItem value="mtn">
+          <SelectItem value="$MTN">
             <div className="flex flex-row items-center">
               <Avatar className="mr-2 inline-block h-6 w-6 justify-center border">
                 <AvatarImage

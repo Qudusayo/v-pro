@@ -20,7 +20,7 @@ const formatDate = (date: Date) => {
   const month = months[date.getMonth()];
   const year = date.getFullYear();
   const hours = date.getHours();
-  const minutes = date.getMinutes();
+  const minutes = date.getMinutes().toString().padStart(2, "0");
   const ampm = hours >= 12 ? "PM" : "AM";
 
   // Convert hours from 24-hour format to 12-hour format
